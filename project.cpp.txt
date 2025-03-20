@@ -1,0 +1,504 @@
+#include <iostream>  
+#include <cctype> 
+#include <vector>
+using namespace std;
+
+class Account{  // Create Account
+   public:
+   string userName;
+   string Password;
+   double blance;
+   bool active;
+     string phone;
+     string address;
+     
+   Account(){ // Opject Account
+     blance = 0;
+     active = true;
+    
+   } 
+   // Opject Account Of userName = userName an Password = Password Of phone = phone address = address    
+   Account(string userName, string Password, string phone, string address){ 
+    this->userName = userName;
+    this->Password = Password;
+    this->phone = phone;
+    this->address = address;
+    blance = 0;
+    active = true;
+    
+   } 
+   
+   Account(string userName, string Password){ 
+    this->userName = userName;
+    this->Password = Password;
+    
+    blance = 0;
+    active = true;
+   }
+ };
+   
+class Ewallet{  // Create Ewallet
+
+ private:
+  string name = "Parsom Ewallet";
+ public:
+  vector<Account> accounts;
+};  
+
+class AccountService{ // Create AccountService
+  public:
+  virtual bool createAccount(Account account) = 0;
+  
+  virtual bool login(Account account) = 0;
+  
+  virtual bool deposit(Account account, double money) = 0;
+  
+  virtual Account getAccount(Account account) = 0;
+  
+  virtual bool withDraw(Account account, double money) = 0;
+  
+  virtual bool trancfer(Account account, string accountTrancfer, double money) = 0;
+  
+  virtual bool ChangePassword(Account account, string Password, string NewPassword) = 0;
+};
+
+class AccountServiceImpl : public AccountService{ // // Create AccountServiceImpl
+  private:
+    Ewallet ewallet;
+  public: 
+   bool createAccount(Account account) {
+      for(int i = 0; i < ewallet.accounts.size();i++){
+        if(ewallet.accounts[i].userName == account.userName){
+         return false; 
+     }
+       }
+      ewallet.accounts.push_back(account);
+           return true; 
+      }
+ 
+ 
+ 
+   bool login(Account account) {
+      for(int i = 0; i < ewallet.accounts.size();i++){
+        if(ewallet.accounts[i].userName == account.userName && ewallet.accounts[i].Password == account.Password ){
+         return true; 
+     }
+      }
+             return false; 
+  }
+  
+  
+  
+   bool deposit(Account account, double money) {
+    for(int i = 0; i < ewallet.accounts.size();i++){
+        if(ewallet.accounts[i].userName == account.userName && 
+     ewallet.accounts[i].Password == account.Password){
+         ewallet.accounts[i].blance += money;
+         return true; 
+     }
+      }
+         return false;
+    }
+    
+    
+    
+    bool withDraw(Account account, double money) {
+    for(int i = 0; i < ewallet.accounts.size();i++){
+        if(ewallet.accounts[i].userName == account.userName && 
+     ewallet.accounts[i].Password == account.Password){
+     if(ewallet.accounts[i].blance >= money){
+      ewallet.accounts[i].blance -= money;
+          cout<<"withDraw Success"<<endl;
+      return true;
+     } else {
+      cout<<"Your Money You Need To Get Is Greater Than Your Blance"<<endl;
+      return false;
+     }
+       }
+     }
+         cout<<"Your Account Not Exist"<<endl;
+        return false;
+    }
+    
+    
+    
+    bool trancfer(Account account, string accountTrancfer, double money) {
+   int accountLoginIndex = -1;
+   for(int i=0; i<ewallet.accounts.size();i++){
+       if (ewallet.accounts[i].userName == account.userName &&
+     ewallet.accounts[i].Password == account.Password){
+      accountLoginIndex = i;
+      break;
+     }
+   }
+   
+   if (accountLoginIndex == -1) {
+    cout<<"Your Account Not Exist"<<endl;
+    return false;
+   }
+   
+   int accountTrancferIndex = -1;
+   for(int i=0; i<ewallet.accounts.size();i++){
+       if (ewallet.accounts[i].userName == accountTrancfer){
+      accountTrancferIndex = i;
+      break;
+     }
+   }
+   
+   if (accountTrancferIndex == -1) {
+    cout<<"Your AccountTrancfer Not Exist"<<endl;
+//cout<<"accountTransfer not exist"<<endl;
+    return false;
+   }
+   
+   if (ewallet.accounts[accountLoginIndex].blance >= money) {
+    ewallet.accounts[accountLoginIndex].blance -= money;
+    ewallet.accounts[accountTrancferIndex].blance += money;
+    cout<<"trancfer Success"<<endl;
+    return true;
+   } else {
+    cout<<"Your Money You Need To Get Is Greater Than Your Blance"<<endl;
+    return false;
+   }
+  }
+    
+    
+    
+  bool ChangePassword(Account account, string Password, string newPassword) {
+      for(int i = 0; i < ewallet.accounts.size(); i++){
+     
+          if(ewallet.accounts[i].userName == account.userName && ewallet.accounts[i].Password == Password){
+            
+              if(newPassword == Password){
+                  cout << "Error: The New Password Must Be Different From The Old Password!" << endl;
+                  return false;
+              }
+              //
+              ewallet.accounts[i].Password = newPassword;
+              cout << "Password Changed Successfully!" << endl;
+              return true;
+          }
+      }
+      cout << "Account Not Existed On Ewallet" << endl;
+      return false;
+      }
+
+    
+    
+
+    Account getAccount(Account account) {
+     
+       for(int i = 0; i < ewallet.accounts.size();i++){
+         if(ewallet.accounts[i].userName == account.userName && ewallet.accounts[i].Password == account.Password){
+      return ewallet.accounts[i];
+        }
+      }
+      
+         Account notExistedAccount;
+         notExistedAccount.userName = "-1";
+         return notExistedAccount;
+           }
+};
+ 
+ class ValidationService{
+  public:
+   virtual bool validatUserName(string userName) = 0 ;
+   
+   virtual bool validatPassword(string Password) = 0 ;
+   
+   virtual bool validatPhone(string phone) = 0 ;
+   
+   virtual bool validatAddress(string address) = 0 ;
+   
+ };
+ 
+ class ValidationServiceImpl : public ValidationService{
+  public:
+   bool validatUserName(string userName) { 
+             if (userName.length() <= 3){ // size userName >= 3 
+                 return false;
+             }
+  
+              if (!isupper(userName[0])) { // check that first char start with upper case
+       return false;
+    }
+    return true;  
+           }
+           
+           
+     bool validatPassword(string Password) {                             
+         if (Password.length() <= 5) return false; // size Password >= 5
+         
+                // check password contain uppercase, lowercase, number and special char =====> (R,r,1,@)
+          bool hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
+              for (size_t i = 0; i < Password.length(); i++) {
+                        char c = Password[i];
+               if(isupper(c)) hasUpper = true;
+               else if(islower(c)) hasLower = true;
+               else if(isdigit(c)) hasDigit = true;
+               else hasSpecial = true;
+     }
+       return hasUpper && hasLower && hasDigit && hasSpecial;
+       }
+  
+  
+  bool validatPhone(string phone) { 
+      // Checks if the text length (number of characters) is equal to 13
+   if (phone.size() != 13) return false;
+   
+      // Checks if the first two characters in phone are +2
+      if (phone.substr(0, 2) != "+2") return false;
+      
+      // It cycles through every character after +2 i.e. from index 2 until the end of the text.Checks whether it is a number or not. 
+      // size_t ===> size_t is an unsigned data type used to represent memory sizes and lengths of strings and arrays.
+      for (size_t i = 2; i < phone.size(); i++) {
+          if (!isdigit(phone[i])) return false;
+      }
+  
+      return true;
+  }        
+           
+     
+  bool validatAddress(string address) {                             
+   return true;
+     } 
+ };
+ 
+class ApplicationService{ // Create ApplicationService
+   virtual void start() = 0; 
+};
+
+class ApplicationServiceImpl : public ApplicationService{ // Create ApplicationServiceImpl
+private:
+     AccountServiceImpl accountServiceImpl;
+     ValidationServiceImpl validationServiceImpl;
+     
+       void CreateAccount(){
+        cout<<"Please Enter userName"<<endl;
+        string userName;
+        cin>>userName;
+        
+        if(!validationServiceImpl.validatUserName(userName)){
+         cout<<"invalid userName"<<endl;
+         return;
+     }
+        
+        
+        cout<<"Please Enter Password"<<endl;
+        string Password;
+        cin>>Password;
+               
+          if(!validationServiceImpl.validatPassword(Password)){
+         cout<<"invalid Password"<<endl;
+         return;
+     }     
+           
+     cout<<"Please Enter Phone"<<endl;
+        string phone;
+        cin>>phone;
+        
+        if(!validationServiceImpl.validatPhone(phone)){
+         cout<<"invalid Phone"<<endl;
+         return;
+     }
+     
+     
+     cout<<"Please Enter Address"<<endl;
+        string address;
+        cin>>address;
+        
+        if(!validationServiceImpl.validatAddress(address)){
+         cout<<"invalid Address"<<endl;
+         return;
+     }
+      
+           Account account(userName, Password, phone, address);
+  
+               bool isAccountCreate = accountServiceImpl.createAccount(account);   
+        
+           if(isAccountCreate){
+            cout<<"SuccessFul Create Your Account"<<endl;
+         } else {
+         cout<<"User Name Existed On Ewallet"<<endl;
+        }
+    }
+  
+  
+    void login(){
+     cout<<"Please Enter userName"<<endl;
+        string userName;
+        cin>>userName;
+        
+        cout<<"Please Enter Password"<<endl;
+        string Password;
+        cin>>Password;
+        
+        
+        
+        Account account(userName, Password);
+        
+         bool isAccounlogin = accountServiceImpl.login(account);   
+        
+           if(isAccounlogin){
+            showProfile(account);
+         } else {
+         cout<<"The Username, Password, Phone Number Or Address Is Invalid"<<endl;
+        }
+    }       
+  
+  
+          void showProfile(Account account){
+         int counter = 0;
+      while(true){
+        cout<<"Please Choose : "<<endl;
+        cout<<"1.Deposit     2.WithDraw     3.Trancfer     4.Show Details     5.Change Password     6.Exit"<<endl;
+           int ChooseChar;
+        cin>>ChooseChar;
+       bool Exit = false; 
+       switch(ChooseChar){
+         case 1:
+          deposit(account);
+         break;
+        case 2:
+         withDraw(account);
+         break;
+        case 3:
+         trancfer(account);
+         break;
+       case 4:
+        cout<<account.Password<<endl;
+         showDetails(account);
+         break;
+       case 5:
+         account.Password =  ChangePassword(account);
+         cout<<account.Password<<endl;
+         break;   
+       case 6:
+         cout<<"I Hope To Have A Nice D+ay. :)"<<endl;
+         Exit = true;
+         break;
+          default:
+           cout<<"Invalid Choose. :("<<endl;
+           counter++;
+        }
+          if(Exit == true){
+           break;
+        } if(counter == 4){
+            cout<<"Please Try Later. :("<<endl;
+           break;
+       }
+            } 
+     }
+     
+     
+     void deposit(Account account){
+      cout<<"Please Enter money You Need To Deposit"<<endl;
+      double money;
+      cin>>money;
+      
+      bool isDeposit = accountServiceImpl.deposit(account, money);   
+        
+           if(isDeposit){
+            cout<<"SuccessFul Deposit"<<endl;
+         } else {
+         cout<<"User Name Not Existed On Ewallet"<<endl;
+        }
+     }
+     
+     
+     void withDraw(Account account){      
+      cout<<"Please Enter money You Need To WithDraw"<<endl;
+      double money;
+      cin>>money;
+      
+      accountServiceImpl.withDraw(account, money);   
+     }
+     
+     void trancfer(Account account){
+      cout<<"Please Enter money You Account You Need To Trancfer"<<endl;
+string userNameTrancfer;
+      cin>>userNameTrancfer;
+      
+      cout<<"Please Enter money You Need To trancfer"<<endl;
+      double money;
+      cin>>money;
+      
+      accountServiceImpl.trancfer(account, userNameTrancfer, money);   
+     }
+     
+     string ChangePassword(Account account){
+      cout<<"Please Enter Old  Password"<<endl;
+            string Password;
+            cin>>Password;
+      
+      cout<<"Please Enter the new password"<<endl;
+      string newPassword;
+      cin>>newPassword;
+      
+      bool isChanged = accountServiceImpl.ChangePassword(account, Password, newPassword);
+        if (isChanged) {
+           cout << "Your password has been changed successfully!" << endl;
+          return  newPassword;
+          
+          } else {
+           cout << "Failed to change the password. Please try again." << endl;
+           return "" ;
+          }
+        }
+     
+     void showDetails(Account account){
+      Account existedAccount = accountServiceImpl.getAccount(account);   
+        
+           if(existedAccount.userName == "-1"){
+            cout<<"Account Not Existed On Ewallet"<<endl;
+         } else {
+         cout<<"Your userName----> "<<existedAccount.userName<<endl;
+         cout<<"Your Password----> "<<existedAccount.Password<<endl;
+         cout<<"Your blance------> "<<existedAccount.blance<<endl;
+         cout<<"Your phone------> "<<existedAccount.phone<<endl;
+         cout<<"Your address------> "<<existedAccount.address<<endl;
+         
+        }
+     }
+    public:
+  void start(){
+   cout<<"======> Welcome to the Vodafone Cash Ewallet program <======"<<endl;
+   int counter = 0;
+   while(true){
+     cout<<"Please Choose : "<<endl;
+     cout<<"a.Login          b.Signup          c.Exit"<<endl;
+        char ChooseChar;
+     cin>>ChooseChar;
+    bool Exit = false; 
+    switch(ChooseChar){
+      case 'a':
+       login();
+      break;
+     case 'b':
+      CreateAccount();
+      break;
+    case 'c':
+      cout<<"I Hope To Have A Nice Day. :)"<<endl;
+      Exit = true;
+      break;
+       default:
+        cout<<"Invalid Choose. :("<<endl;
+        counter++;
+        
+     }
+       if(Exit == true){
+        break;
+     } if(counter == 4){
+         cout<<"Please Try Later. :("<<endl;
+        break;
+    }
+         } 
+  }
+  
+};
+int main() {
+ 
+ ApplicationServiceImpl application;
+ application.start();
+ 
+}
